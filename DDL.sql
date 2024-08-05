@@ -60,11 +60,11 @@ create schema dds_fact;
 
 drop table dds_fact.invoice ;
 create table dds_fact.invoice(
-    invoice_id text  ,
-    branch_id int,
-    customer_id int,
-    product_id int,
-    date_id int,
+    invoice_id text primary key,
+    branch_id int references dds_dim.branch(branch_id),
+    customer_id int references dds_dim.customer(customer_id),
+    product_id int references dds_dim.product(product_id),
+    date_id int references dds_dim.date(id),
     quantity int,
     tax numeric  ,
     total numeric ,
@@ -79,7 +79,7 @@ create table dds_fact.invoice(
 
 drop table dds_dim.customer cascade;
 create table dds_dim.customer(
-    customer_id int,
+    customer_id int primary key,
     customer_type text,
     gender text,
     customer_category text,
@@ -89,19 +89,20 @@ create table dds_dim.customer(
 
 drop table dds_dim.branch cascade;
 create table dds_dim.branch(
-    branch_id int,
+    branch_id int  primary key,
     branch_name char(1),
     branch_city text
 );
 
 drop table dds_dim.product cascade;
 create table dds_dim.product(
-    product_id int,
+    product_id int  primary key ,
     product_line_name text, 
     effective_from date,
     effective_to date
 );
 
+drop table dds_dim.date;
 CREATE TABLE dds_dim.date
 AS
 WITH dates AS (
@@ -112,7 +113,7 @@ WITH dates AS (
             , '1 day'::interval) dd
 )
 SELECT
-    to_char(dt, 'YYYYMMDD')::int AS id,
+    to_char(dt, 'YYYYMMDD')::int AS id ,
     dt AS date,
     to_char(dt, 'YYYY-MM-DD') AS ansi_date,
     date_part('isodow', dt)::int AS day,
@@ -254,7 +255,7 @@ SELECT
 FROM dates
 ORDER BY dt;
 
-ALTER TABLE dim.date ADD PRIMARY KEY (id);
+ALTER TABLE dds_dim.date ADD PRIMARY KEY (id);
 
 ------------DATA MART----------------------------
 create schema data_mart; 
